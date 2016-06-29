@@ -8,6 +8,8 @@ FFapiHitter <- function(url, nPlayers, relevantFields) {
   #Load dependencies
   library(dplyr)
   library(jsonlite)
+  list<-list()
+  output<-list()
   
   numCols = length(relevantFields)
   
@@ -15,10 +17,13 @@ FFapiHitter <- function(url, nPlayers, relevantFields) {
   allplayerdata <- data.frame(matrix(NA,nrow=1,ncol=numCols))
   allplayerdata <- allplayerdata[-1,]
   allplayerdata <- lapply(1:nPlayers, fetchData)
+  list <- lapply(1:nPlayers, fetchList)
   allplayerdata <- do.call(rbind, lapply(allplayerdata,
                                          data.frame,
                                          stringsAsFactors=FALSE))
-  return(allplayerdata)
+  output$allplayerdata <- allplayerdata
+  output$list <- list
+  return(output)
   
   
 }
@@ -27,9 +32,15 @@ fetchData <- function(i) {
   res <- try(jsondata <- fromJSON(paste0(url,i)))
   if(!inherits(res, "try-error")) {
     
-    print(paste('finished scraping player', i))
+    print(paste('finished building dataframe for player', i))
     jsondata <- jsondata[which(names(jsondata) %in% relevantFields)]
   }
+}
+
+fetchList <- function(i) { 
+  print(paste('finished making list for player', i))
+  list[[i]]<-fromJSON(paste0(url,i))
+
 }
 
 
@@ -50,12 +61,6 @@ relevantFields <- c("points_per_game","total_points","type_name",
                     "yellow_cards","red_cards","saves",
                     "bonus","bps","ea_index",
                     "value_form","value_season","selected_by")
-nPlayers <- 710
+nPlayers <- 700
 output <- FFapiHitter(url, nPlayers, relevantFields) 
-tail(output)
-
-
-                         
-                         
-                         
-
+ls(output)
